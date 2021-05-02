@@ -24,7 +24,8 @@ def load_data_pd(data_dir, data_name):
     return pd.read_csv(data_path)
 
 
-# SPLITTING DATA into test and train set using stratified shuffle split
+# SPLITTING DATA
+# split into test and train set using stratified shuffle split
 from sklearn.model_selection import StratifiedShuffleSplit
 
 
@@ -44,7 +45,8 @@ def shuffle_split_data(dataframe, splitting, ratio=0.2):
     return strat_dataset
 
 
-# CUSTOM TRANSFORMER (adding population per household etc.)
+# CUSTOM TRANSFORMER(S)
+# combine attributes
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -57,7 +59,7 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
       column/attributes ('divide m-th by n-th column')
 
     Input for transform:
-    - X np array
+    - X (np) array (only numerical entries)
 
     Output:
     - X with the appended attributes.
@@ -80,3 +82,67 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
         for col in combined_columns:
             X = np.c_[X, attr]
         return X
+
+
+# DATA PIPELINE
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.compose import ColumnTransformer
+
+
+def num_pipeline(combine_attrs):
+    """
+    Simple pipeline to transform numerical data using sklearn's Pipeline.
+
+    Executes the following transformations:
+    - 'imputer': Replaces missing values in a column by corresponding median values.
+    - 'attribs_adder': Applies the CombinedAttributesAdder with parameters combine_attrs.
+    - 'std_scaler': Scales the values.
+    """
+    num_pipeline = Pipeline(
+        [
+            ("imputer", SimpleImputer(strategy="median")),
+            ("attribs_adder", CombinedAttributesAdder(combine_attrs)),
+            ("std_scaler", StandardScaler()),
+        ]
+    )
+    return num_pipeline
+
+
+def full_pipeline(num_array, cat_array, combine_attrs):
+    """
+    Input:
+    - num_data: typically numerical part of original data
+    - cat_attrs: categorical attributes of the original data
+      NOTE: 1D array (could be multi-dimensional?!)
+    - combine_attrs: attributes to be combined via the num_pipeline
+
+    Output:
+    - a full data pipeline: num_data transformed by num_pipeline,
+      cat_attribs transformed by a one-hot encoder.
+    """
+    full_pipeline = ColumnTransformer(
+        [
+            ("num", num_pipeline(combine_attrs), num_array),
+            ("cat", OneHotEncoder(), cat_array),
+        ]
+    )
+    return full_pipeline
+
+
+def full_pipeline_tr(df, combine_attrs):
+    """Transforms the dataframe df via full_pipeline."""
+    # split dataframe df into numerical (num_array) and categorical (cat_array)
+    num_array = list(df.select_dtypes(exclude="object"))
+    cat_array = list(df.select_dtypes(include="object"))
+
+    # get the pipeline
+    full_pipe = full_pipeline(num_array, cat_array, combine_attrs)
+
+    return full_pipe.fit_transform(df)
+
+
+# TESTS
+X = pd.DataFrame([[1, 2, 3, "a"], [4, 5, 6, "b"], [7, 8, 9, "c"]])
+print(full_pipeline_tr(X, [(0, 1), (1, 2)]))
