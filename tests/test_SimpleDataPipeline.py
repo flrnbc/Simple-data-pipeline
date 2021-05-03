@@ -16,12 +16,12 @@ test_data = sdp.load_data_pd(data_path, data_name)
 
 def test_shuffle_split_data():
     # test_data_short = test_data.iloc[:100]
-    splitting = pd.cut(
+    bins = pd.cut(
         test_data["median_income"],
         bins=[0, 1.5, 3.0, 4.5, 6, np.inf],
         labels=[1, 2, 3, 4, 5],
     )
-    strat_test_data = sdp.shuffle_split_data(test_data, splitting, ratio=0.2)
+    strat_test_data = sdp.shuffle_split_data(test_data, bins, ratio=0.2)
 
     assert len(strat_test_data[0]) == 0.8 * len(test_data)
     assert len(strat_test_data[1]) == 0.2 * len(test_data)
