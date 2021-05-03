@@ -30,20 +30,20 @@ def load_data_pd(data_path, data_name):
 from sklearn.model_selection import StratifiedShuffleSplit
 
 
-def shuffle_split_data(dataframe, splitting, ratio=0.2):
+def shuffle_split_data(dataframe, bins, ratio=0.2):
     """
     Splits data into test and training set using StratifiedShuffleSplit (sklearn).
 
     Input:
     - dataframe: data to be split
-    - splitting: bins used for StratifiedShuffleSplit (use pd.cut)
+    - bins: used for StratifiedShuffleSplit (use pd.cut)
     - ratio: len(test_set)/len(dataframe)
 
     Output:
     - Tuple (train_set, test_set).
     """
     shuffle_split = StratifiedShuffleSplit(n_splits=1, test_size=ratio, random_state=42)
-    for train_index, test_index in shuffle_split.split(dataframe, splitting):
+    for train_index, test_index in shuffle_split.split(dataframe, bins):
         strat_train_set = dataframe.loc[train_index]
         strat_test_set = dataframe.loc[test_index]
     return (strat_train_set, strat_test_set)
