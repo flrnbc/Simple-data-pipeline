@@ -1,14 +1,15 @@
 import os
 import tarfile
 import urllib.request
+
 import numpy as np
 import pandas as pd
 
 
 # DOWNLOAD DATA
-def fetch_data(data_url, data_path):
+def fetch_data(data_url, data_path, data_name):
     os.makedirs(data_path, exist_ok=True)
-    tgz_path = os.path.join(data_path, DATA_NAME + ".tgz")
+    tgz_path = os.path.join(data_path, data_name + ".tgz")
     # only download
     if not os.path.exists(tgz_path):
         urllib.request.urlretrieve(data_url, tgz_path)  # download tar-file
@@ -18,8 +19,8 @@ def fetch_data(data_url, data_path):
 
 
 # LOAD DATA with pandas
-def load_data_pd(data_dir, data_name):
-    data_path = os.path.join(data_dir, data_name + ".csv")
+def load_data_pd(data_path, data_name):
+    data_path = os.path.join(data_path, data_name + ".csv")
     print("Loaded {}.".format(data_path))
     return pd.read_csv(data_path)
 
@@ -30,19 +31,22 @@ from sklearn.model_selection import StratifiedShuffleSplit
 
 
 def shuffle_split_data(dataframe, splitting, ratio=0.2):
-    # create categories for splitting (here median_income most important)
+    """
+    Splits data into test and training set using StratifiedShuffleSplit (sklearn).
 
-    # its type is pandas.core.series.Series
+    Input:
+    - dataframe: data to be split
+    - splitting: bins used for StratifiedShuffleSplit (use pd.cut)
+    - ratio: len(test_set)/len(dataframe)
+
+    Output:
+    - Tuple (train_set, test_set).
+    """
     shuffle_split = StratifiedShuffleSplit(n_splits=1, test_size=ratio, random_state=42)
     for train_index, test_index in shuffle_split.split(dataframe, splitting):
         strat_train_set = dataframe.loc[train_index]
         strat_test_set = dataframe.loc[test_index]
-    # have to remove 'income_cat'
-    # TODO: why?!?
-    for set_ in (strat_train_set, strat_test_set):
-        set_.drop("income_cat", axis=1, inplace=True)
-    strat_dataset = (strat_train_set, strat_test_set)
-    return strat_dataset
+    return (strat_train_set, strat_test_set)
 
 
 # CUSTOM TRANSFORMER(S)
@@ -70,11 +74,11 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
         # (design choice?)
         self.combine_attrs = combine_attrs
 
-    def fit(self, X):
+    def fit(self, X, y=None):
         return self
 
     # why not work with pd dataframes?
-    def transform(self, X):
+    def transform(self, X, y=None):
         combined_columns = []
         for pair in self.combine_attrs:
             attr = X[:, pair[0]] / X[:, pair[1]]
@@ -84,11 +88,12 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
         return X
 
 
+from sklearn.compose import ColumnTransformer
+
 # DATA PIPELINE
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 def num_pipeline(combine_attrs):
@@ -146,3 +151,4 @@ def full_pipeline_tr(df, combine_attrs):
 # TESTS
 X = pd.DataFrame([[1, 2, 3, "a"], [4, 5, 6, "b"], [7, 8, 9, "c"]])
 print(full_pipeline_tr(X, [(0, 1), (1, 2)]))
+print(type(full_pipeline_tr(X, [(0, 1), (1, 2)])))
