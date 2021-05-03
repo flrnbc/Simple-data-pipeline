@@ -19,9 +19,9 @@ Given a DataFrame `df` (e.g. `df = load_data_pd(data_path, data_name)`), we spli
 ## Clean and enhance data
 After splitting the data as above, we usually continue working with the train data and set `df = train_data`. Then the function `full_pipeline_tr(df, combine_attrs)` cleans and enhances the dataframe `df` as follows:
 
-* cleaning the data: consists in two steps. First, `df` is split into numerical and categorical attributes `df_num` and `df_cat`. Then `df_num` is cleaned using:
- * all 'na' values in a column of ~df_num~ is replaced by the median value of the corresponding column,
- * then ~df_num~ is standarized by removing the mean and scaling to unit variance,
- * ~df_cat~ is one-hot-encoded to obtain a purely numerical array as output.
+* First, `df` is split into numerical and categorical attributes `df_num` and `df_cat`. Then `df_num` is cleaned using:
+  * all 'na' values in a column of `df_num` is replaced by the median value of the corresponding column,
+  * then `df_num` is standarized by removing the mean and scaling to unit variance,
+  * `df_cat` is one-hot-encoded to obtain a purely numerical array as output.
 
-* Enhancing the data by combining numerical attributes together: ~combine_attrs~ is a list containing integer tuples. For each such tuple (m, n) the function divides the m-th by the n-th numerical attribute (column) and adds result to ~df~ as a new attribute.
+* Enhancing the data by combining numerical attributes together: `combine_attrs` is a list containing integer tuples. For each such tuple (m, n) the function divides the m-th by the n-th numerical attribute (column) and adds result to `df` as a new attribute.
