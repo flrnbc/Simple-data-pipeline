@@ -65,27 +65,23 @@ def test_num_pipeline():
 
 
 def test_full_pipelin_tr():
-    X_np = np.array([[2, 4, 8, 6, "a"],
+    X_df = pd.DataFrame([[2, 4, 8, 6, "a"],
                   [2, 4, 8, 8, "b"],
                   [4, 8, 16, np.nan, "c"]])
-    X_df = pd.DataFrame(data=X_np,
-                        index=["1", "2", "3"],
-                        columns=["col 1", "col 2", "col3", "col4", "col5"])
-    print(X_df)
+    # numerical part
     X_num = np.array([[2, 4, 8, 6],
-                  [2, 4, 8, 8],
-                  [4, 8, 16, np.nan]])
-
-    pipeline_num = sdp.num_pipeline([(0, 1), (1, 2)])
-    X1 = pipeline_num.fit_transform(X_num)
-    X_cat = np.array([[1, 0, 0],
+                      [2, 4, 8, 8],
+                      [4, 8, 16, np.nan]])
+    # categorical part already one-hot-encoded
+    X_cat_1hot = np.array([[1, 0, 0],
                       [0, 1, 0],
                       [0, 0, 1]])
-    Y = np.c_[X1, X_cat]
-    print(Y)
+    pipeline_num = sdp.num_pipeline([(0, 1), (1, 2)])
+    X1 = pipeline_num.fit_transform(X_num)
+    Y = np.c_[X1, X_cat_1hot]
 
+    # now apply full pipeline
     X_tr = sdp.full_pipeline_tr(X_df, [(0, 1), (1, 2)])
-    print(X_tr)
     
-    #assert (X_tr == Y)
+    assert (X_tr == Y).all()
 
