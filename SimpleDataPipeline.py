@@ -100,8 +100,10 @@ def num_pipeline(combine_attrs):
     Simple pipeline to transform numerical data using sklearn's Pipeline.
 
     Executes the following transformations:
-    - 'imputer': Replaces missing values in a column by corresponding median values.
-    - 'attribs_adder': Applies the CombinedAttributesAdder with parameters combine_attrs.
+    - 'imputer': Replaces missing values in a column by corresponding
+                 median values.
+    - 'attribs_adder': Applies the CombinedAttributesAdder with
+                       parameters combine_attrs.
     - 'std_scaler': Scales the values.
     """
     num_pipeline = Pipeline(

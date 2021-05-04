@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
 import SimpleDataPipeline as sdp
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler
 
 data_path = "datasets"
 data_url = (
@@ -66,22 +66,21 @@ def test_num_pipeline():
 
 def test_full_pipelin_tr():
     X_df = pd.DataFrame([[2, 4, 8, 6, "a"],
-                  [2, 4, 8, 8, "b"],
-                  [4, 8, 16, np.nan, "c"]])
+                         [2, 4, 8, 8, "b"],
+                         [4, 8, 16, np.nan, "c"]])
     # numerical part
     X_num = np.array([[2, 4, 8, 6],
                       [2, 4, 8, 8],
                       [4, 8, 16, np.nan]])
     # categorical part already one-hot-encoded
     X_cat_1hot = np.array([[1, 0, 0],
-                      [0, 1, 0],
-                      [0, 0, 1]])
+                           [0, 1, 0],
+                           [0, 0, 1]])
     pipeline_num = sdp.num_pipeline([(0, 1), (1, 2)])
     X1 = pipeline_num.fit_transform(X_num)
     Y = np.c_[X1, X_cat_1hot]
 
     # now apply full pipeline
     X_tr = sdp.full_pipeline_tr(X_df, [(0, 1), (1, 2)])
-    
-    assert (X_tr == Y).all()
 
+    assert (X_tr == Y).all()
