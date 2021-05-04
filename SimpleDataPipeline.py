@@ -7,22 +7,22 @@ import pandas as pd
 
 
 # DOWNLOAD DATA
-def fetch_data(data_url, data_path, data_name):
-    os.makedirs(data_path, exist_ok=True)
-    tgz_path = os.path.join(data_path, data_name + ".tgz")
+def fetch_data(data_url, data_dir, data_name):
+    os.makedirs(data_dir, exist_ok=True)
+    tgz_path = os.path.join(data_dir, data_name + ".tgz")
     # only download
     if not os.path.exists(tgz_path):
         urllib.request.urlretrieve(data_url, tgz_path)  # download tar-file
         housing_tgz = tarfile.open(tgz_path)
-        housing_tgz.extractall(path=data_path)  # extract to housing_path
+        housing_tgz.extractall(path=data_dir)  # extract to housing_path
         housing_tgz.close()
 
 
 # LOAD DATA with pandas
-def load_data_pd(data_path, data_name):
-    data_path = os.path.join(data_path, data_name + ".csv")
-    print("Loaded {}.".format(data_path))
-    return pd.read_csv(data_path)
+def load_data_pd(data_dir, data_name):
+    data_dir = os.path.join(data_dir, data_name + ".csv")
+    print("Loaded {}.".format(data_dir))
+    return pd.read_csv(data_dir)
 
 
 # SPLITTING DATA
@@ -146,9 +146,3 @@ def full_pipeline_tr(df, combine_attrs):
     full_pipe = full_pipeline(num_array, cat_array, combine_attrs)
 
     return full_pipe.fit_transform(df)
-
-
-# TESTS
-X = pd.DataFrame([[1, 2, 3, "a"], [4, 5, 6, "b"], [7, 8, 9, "c"]])
-print(full_pipeline_tr(X, [(0, 1), (1, 2)]))
-print(type(full_pipeline_tr(X, [(0, 1), (1, 2)])))
