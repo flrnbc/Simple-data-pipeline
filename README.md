@@ -7,7 +7,9 @@ This basic data pipeline gives one way to do so using [Scikit-learn](https://git
 - splitting the data with respect to categories/bins (see below)
 - clean the data and add combined attributes.
 
-We next explain these in more detail.
+To ensure this functionality and for future changes, we have added tests (using `pytest`).  
+
+We next explain our data pipeline in more detail.
 
 ## Loading data
 Via the function
@@ -41,7 +43,7 @@ cleans and enhances the DataFrame `df` as follows:
 
 * Enhancing the data by combining numerical attributes together: `combine_attrs` is a list containing integer tuples. For each such tuple (m, n) the function divides the m-th by the n-th numerical attribute (column) and adds the result to `df` as a new attribute.
 
-# Example
+## Example
 
 To showcase our data pipeline, we use the housing dataset, as for example employed in Géron's book "Hands-On Machine Learning..." in Chapter 2 ([repo](https://github.com/ageron/handson-ml2)). 
 
