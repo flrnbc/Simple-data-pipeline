@@ -10,15 +10,29 @@ This basic data pipeline gives one way to do so using [Scikit-learn](https://git
 We next explain these in more detail.
 
 ## Loading data
-Via the function `fetch_data(data_url, data_dir, data_name)` we can download a tgz-file containing a csv-file.
-More precisely, we download the file from the URL `data_url` to the (relative) path `data_dir/data_name.tgz` and extract it to `data_dir/data_name.csv`.
-Then the function `load_data_pd(data_dir, data_name)` loads the data to a (Pandas) DataFrame where `data_dir` and `data_name` are usually as before.
+Via the function
+
+ `fetch_data(data_url, data_dir, data_name)` 
+
+we can download a tgz-file containing a csv-file. More precisely, we download the file from the URL `data_url` to the (relative) path `data_dir/data_name.tgz` and extract it to `data_dir/data_name.csv`. Then the function 
+
+`load_data_pd(data_dir, data_name)` 
+
+loads the data to a (Pandas) DataFrame where `data_dir` and `data_name` are usually as before.
 
 ## Splitting data
-Given a DataFrame `df` (e.g. `df = load_data_pd(data_dir, data_name)`), we split it into a train and test set. It often makes sense to do so with stratified sampling using so-called categories or bins (see example below). Then `shuffle_split_data(df, bins, ratio)` returns a tuple `(train_data, test_data)` such that the `test_data` has the size `ratio * (size of df)`.
+Given a DataFrame `df` (e.g. `df = load_data_pd(data_dir, data_name)`), we split it into a train and test set. It often makes sense to do so with stratified sampling using so-called categories or bins (see example below). Then
+
+ `shuffle_split_data(df, bins, ratio)` 
+
+returns a tuple `(train_data, test_data)` such that the `test_data` has the size `ratio * (size of df)`.
 
 ## Clean and enhance data
-After splitting the data as above, we usually continue working with the train data and set `df = train_data`. Then the function `full_pipeline_tr(df, combine_attrs)` cleans and enhances the DataFrame `df` as follows:
+After splitting the data as above, we usually continue working with the train data and set `df = train_data`. The function 
+
+`full_pipeline_tr(df, combine_attrs)` 
+
+cleans and enhances the DataFrame `df` as follows:
 
 * First, `df` is split into numerical and categorical attributes `df_num` and `df_cat` respectively. Then `df_num` is cleaned using:
   * all 'na' values in a column of `df_num` is replaced by the median value of the corresponding column,
