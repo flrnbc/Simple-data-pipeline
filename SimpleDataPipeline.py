@@ -34,6 +34,8 @@ def load_data_pd(data_dir, data_name):
 # SPLITTING DATA
 # split into test and train set using stratified shuffle split
 
+# TODO: add labels and drop
+
 
 def shuffle_split_data(dataframe, bins, ratio=0.2):
     """
@@ -41,7 +43,7 @@ def shuffle_split_data(dataframe, bins, ratio=0.2):
 
     Input:
     - dataframe: data to be split
-    - bins: used for StratifiedShuffleSplit (use pd.cut)
+    - bins: category used for StratifiedShuffleSplit (use pd.cut)
     - ratio: len(test_set)/len(dataframe)
 
     Output:
@@ -94,7 +96,6 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
 
 # DATA PIPELINE
 
-
 def num_pipeline(combine_attrs):
     """
     Simple pipeline to transform numerical data using sklearn's Pipeline.
@@ -116,7 +117,7 @@ def num_pipeline(combine_attrs):
     return num_pipeline
 
 
-def full_pipeline(num_array, cat_array, combine_attrs):
+def full_pipeline(df, combine_attrs):
     """
     Input:
     - num_data: typically numerical part of original data
@@ -128,6 +129,9 @@ def full_pipeline(num_array, cat_array, combine_attrs):
     - a full data pipeline: num_data transformed by num_pipeline,
       cat_attribs transformed by a one-hot encoder.
     """
+    num_array = list(df.select_dtypes(exclude="object"))
+    cat_array = list(df.select_dtypes(include="object"))
+
     full_pipeline = ColumnTransformer(
         [
             ("num", num_pipeline(combine_attrs), num_array),
@@ -140,10 +144,8 @@ def full_pipeline(num_array, cat_array, combine_attrs):
 def full_pipeline_tr(df, combine_attrs):
     """Transforms the dataframe df via full_pipeline."""
     # split dataframe df into numerical (num_array) and categorical (cat_array)
-    num_array = list(df.select_dtypes(exclude="object"))
-    cat_array = list(df.select_dtypes(include="object"))
 
     # get the pipeline
-    full_pipe = full_pipeline(num_array, cat_array, combine_attrs)
+    full_pipe = full_pipeline(df, combine_attrs)
 
     return full_pipe.fit_transform(df)
