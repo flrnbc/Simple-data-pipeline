@@ -34,8 +34,6 @@ def load_data_pd(data_dir, data_name):
 # SPLITTING DATA
 # split into test and train set using stratified shuffle split
 
-# TODO: add labels and drop
-
 
 def shuffle_split_data(dataframe, bins, ratio=0.2):
     """
@@ -96,6 +94,7 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
 
 # DATA PIPELINE
 
+
 def num_pipeline(combine_attrs):
     """
     Simple pipeline to transform numerical data using sklearn's Pipeline.
@@ -141,11 +140,33 @@ def full_pipeline(df, combine_attrs):
     return full_pipeline
 
 
-def full_pipeline_tr(df, combine_attrs):
-    """Transforms the dataframe df via full_pipeline."""
-    # split dataframe df into numerical (num_array) and categorical (cat_array)
+def full_transform(df, bins, combine_attrs, labels_to_predict, ratio=0.2):
+    """
+    Input:
+    - df: dataframe
+    - ratio: test_set/full_data
+    - bins: to split data into train and test set
+    - combine_attrs: attributes which will be combined
+    - labels_to_predict: used to fit a model.
 
-    # get the pipeline
-    full_pipe = full_pipeline(df, combine_attrs)
+    Output:
+    - dict containing
+      + "train set": fully transformed train set using the above functions and
+        removing the labels
+      + "labels": the labels (of the train set) which will be used to train
+        our models
+      + "test_set": just the test set.
+    """
+    shuffle_split = shuffle_split_data(df, bins, ratio)
+    train_set = shuffle_split[0]
+    test_set = shuffle_split[1]
 
-    return full_pipe.fit_transform(df)
+    # get labels and drop them in test set
+    train_set_drop = train_set.drop(labels_to_predict, axis=1)
+    labels = train_set[labels_to_predict].copy()
+
+    # transform train_set
+    full_pipe = full_pipeline(train_set_drop, combine_attrs)
+    tr_train_set = full_pipe.fit_transform(train_set_drop)
+
+    return {"train set": tr_train_set, "test set": test_set, "labels": labels}
