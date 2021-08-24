@@ -1,5 +1,5 @@
-import os
-import tarfile
+from pathlib import Path
+import shutil
 import urllib.request
 
 import numpy as np
@@ -13,22 +13,24 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 # DOWNLOAD DATA
-def fetch_data(data_url, data_dir, data_name):
-    os.makedirs(data_dir, exist_ok=True)
-    tgz_path = os.path.join(data_dir, data_name + ".tgz")
-    # only download
-    if not os.path.exists(tgz_path):
-        urllib.request.urlretrieve(data_url, tgz_path)  # download tar-file
-        housing_tgz = tarfile.open(tgz_path)
-        housing_tgz.extractall(path=data_dir)  # extract to housing_path
-        housing_tgz.close()
-
-
-# LOAD DATA with pandas
-def load_data_pd(data_dir, data_name):
-    data_dir = os.path.join(data_dir, data_name + ".csv")
-    print("Loaded {}.".format(data_dir))
-    return pd.read_csv(data_dir)
+def fetch_data(data_url, file_dir):
+    """
+    Download a(n archived) csv-file from data_url 
+    and save it, or extract it, if necessary, into the
+    directory file_dir.
+    If file_dir does not yet exist, it is automatically created.
+    """
+    data_path = Path(data_url)
+    file_name = data_path.name
+    if not file_dir.exists():
+        file_dir.mkdir
+    # download file to file_dir if such a file does not yet exist
+    if Path(file_dir + file_name).exists():
+        raise FileExistsError("File already exists.")
+    urllib.request.urlretrieve(data_url, file_dir + file_name)
+    if not Path(data_url).suffix == '.csv':
+        shutil.unpack_archive(file_dir + file_name)
+        return f"Data downloaded to {file_dir} and decompressed."
 
 
 # SPLITTING DATA
@@ -41,7 +43,8 @@ def shuffle_split_data(dataframe, bins, ratio=0.2):
 
     Input:
     - dataframe: data to be split
-    - bins: category used for StratifiedShuffleSplit (use pd.cut)
+    - bins: category used for StratifiedShuffleSplit 
+      (bins is a pd Series usually obtained with pd.cut)
     - ratio: len(test_set)/len(dataframe)
 
     Output:
@@ -143,14 +146,15 @@ def full_pipeline(df, combine_attrs):
     return full_pipeline
 
 
-def full_transform(df, bins, combine_attrs, labels_to_predict, ratio=0.2):
+def full_transform(df, bins, combine_attrs, label_to_predict, ratio=0.2):
     """
     Input:
     - df: dataframe
     - ratio: test_set/full_data
-    - bins: to split data into train and test set
+    - bins: to split data into train and test set 
+      (bins is a pd Series usually obtained with pd.cut)
     - combine_attrs: attributes which will be combined
-    - labels_to_predict: used to fit a model.
+    - label_to_predict: will be used to fit model to train data
 
     Output:
     - dict containing
@@ -177,8 +181,8 @@ def full_transform(df, bins, combine_attrs, labels_to_predict, ratio=0.2):
     tr_test_set = full_pipe.transform(test_set_drop)
 
     return {
-        "train set": tr_train_set,
-        "train labels": train_labels,
-        "test set": tr_test_set,
-        "test labels": test_labels,
+        "train_set": tr_train_set,
+        "train_labels": train_labels,
+        "test_set": tr_test_set,
+        "test_labels": test_labels,
     }
