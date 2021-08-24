@@ -81,6 +81,7 @@ def test_full_pipelin_tr():
     Y = np.c_[X1, X_cat_1hot]
 
     # now apply full pipeline
-    X_tr = sdp.full_pipeline_tr(X_df, [(0, 1), (1, 2)])
+    pipeline = sdp.full_pipeline(X_df, [(0, 1), (1, 2)])
+    X_tr = pipeline.fit_transform(X_df)
 
     assert (X_tr == Y).all()

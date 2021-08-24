@@ -67,11 +67,8 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
     - combine_attrs: list of tuples (m, n). These will combine the m-th and n-th
       column/attributes ('divide m-th by n-th column')
 
-    Input for transform:
-    - X (np) array (only numerical entries)
-
-    Output:
-    - X with the appended attributes.
+    Class methods:
+    - transform 
     """
 
     def __init__(self, combine_attrs):
@@ -84,6 +81,13 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
 
     # why not work with pd dataframes?
     def transform(self, X, y=None):
+        """
+        Input for transform:
+        - X (np) array (only numerical entries)
+
+        Output:
+        - X with the appended attributes.
+        """
         combined_columns = []
         for pair in self.combine_attrs:
             attr = X[:, pair[0]] / X[:, pair[1]]
@@ -120,9 +124,7 @@ def num_pipeline(combine_attrs):
 def full_pipeline(df, combine_attrs):
     """
     Input:
-    - num_data: typically numerical part of original data
-    - cat_attrs: categorical attributes of the original data
-      NOTE: 1D array (could be multi-dimensional?!)
+    - df: dataframe
     - combine_attrs: attributes to be combined via the num_pipeline
 
     Output:
@@ -130,7 +132,7 @@ def full_pipeline(df, combine_attrs):
       cat_attribs transformed by a one-hot encoder.
     """
     num_array = list(df.select_dtypes(exclude="object"))
-    cat_array = list(df.select_dtypes(include="object"))
+    cat_array = list(df.select_dtypes(include="object")) 
 
     full_pipeline = ColumnTransformer(
         [
