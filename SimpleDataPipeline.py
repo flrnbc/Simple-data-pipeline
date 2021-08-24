@@ -56,6 +56,7 @@ def shuffle_split_data(dataframe, bins, ratio=0.2):
 
 # CUSTOM TRANSFORMER(S)
 # combine attributes
+# TODO: add names for the combined attributes?
 
 
 class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
@@ -153,20 +154,29 @@ def full_transform(df, bins, combine_attrs, labels_to_predict, ratio=0.2):
     - dict containing
       + "train set": fully transformed train set using the above functions and
         removing the labels
-      + "labels": the labels (of the train set) which will be used to train
+      + "train labels": the labels (of the train set) which will be used to train
         our models
-      + "test_set": just the test set.
+      + "test set": transformed test set (also removing the labels)
+      + "test labels": corresponding labels of test set.
     """
     shuffle_split = shuffle_split_data(df, bins, ratio)
     train_set = shuffle_split[0]
     test_set = shuffle_split[1]
 
-    # get labels and drop them in test set
+    # get labels and drop them in train and test set
     train_set_drop = train_set.drop(labels_to_predict, axis=1)
-    labels = train_set[labels_to_predict].copy()
+    train_labels = train_set[labels_to_predict].copy()
+    test_set_drop = test_set.drop(labels_to_predict, axis=1)
+    test_labels = test_set[labels_to_predict].copy()
 
-    # transform train_set
+    # transform train_set and test_set (for evaluation)
     full_pipe = full_pipeline(train_set_drop, combine_attrs)
     tr_train_set = full_pipe.fit_transform(train_set_drop)
+    tr_test_set = full_pipe.transform(test_set_drop)
 
-    return {"train set": tr_train_set, "test set": test_set, "labels": labels}
+    return {
+        "train set": tr_train_set,
+        "train labels": train_labels,
+        "test set": tr_test_set,
+        "test labels": test_labels,
+    }
