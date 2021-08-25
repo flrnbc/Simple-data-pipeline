@@ -3,7 +3,6 @@ import shutil
 import urllib.request
 
 import numpy as np
-import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -15,22 +14,25 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 # DOWNLOAD DATA
 def fetch_data(data_url, file_dir):
     """
-    Download a(n archived) csv-file from data_url 
+    Download a(n archived) csv-file from data_url
     and save it, or extract it, if necessary, into the
     directory file_dir.
     If file_dir does not yet exist, it is automatically created.
     """
-    data_path = Path(data_url)
-    file_name = data_path.name
-    if not file_dir.exists():
-        file_dir.mkdir
+    file_name = Path(data_url).name
+    dir_path = Path(file_dir)
+    if not dir_path.exists():
+        dir_path.mkdir()
     # download file to file_dir if such a file does not yet exist
-    if Path(file_dir + file_name).exists():
+    file_path = dir_path.joinpath(file_name)
+    if file_path.exists():
         raise FileExistsError("File already exists.")
-    urllib.request.urlretrieve(data_url, file_dir + file_name)
-    if not Path(data_url).suffix == '.csv':
-        shutil.unpack_archive(file_dir + file_name)
-        return f"Data downloaded to {file_dir} and decompressed."
+    print(str(file_path))
+    urllib.request.urlretrieve(data_url, str(file_path))
+    if Path(data_url).suffix == ".csv":
+        return f"Data (csv-file) downloaded to {file_dir}."
+    shutil.unpack_archive(str(file_path), str(dir_path))
+    return f"Data downloaded to {file_dir} and decompressed."
 
 
 # SPLITTING DATA
@@ -43,7 +45,7 @@ def shuffle_split_data(dataframe, bins, ratio=0.2):
 
     Input:
     - dataframe: data to be split
-    - bins: category used for StratifiedShuffleSplit 
+    - bins: category used for StratifiedShuffleSplit
       (bins is a pd Series usually obtained with pd.cut)
     - ratio: len(test_set)/len(dataframe)
 
@@ -71,7 +73,7 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
       column/attributes ('divide m-th by n-th column')
 
     Class methods:
-    - transform 
+    - transform
     """
 
     def __init__(self, combine_attrs):
@@ -135,7 +137,7 @@ def full_pipeline(df, combine_attrs):
       cat_attribs transformed by a one-hot encoder.
     """
     num_array = list(df.select_dtypes(exclude="object"))
-    cat_array = list(df.select_dtypes(include="object")) 
+    cat_array = list(df.select_dtypes(include="object"))
 
     full_pipeline = ColumnTransformer(
         [
@@ -151,7 +153,7 @@ def full_transform(df, bins, combine_attrs, label_to_predict, ratio=0.2):
     Input:
     - df: dataframe
     - ratio: test_set/full_data
-    - bins: to split data into train and test set 
+    - bins: to split data into train and test set
       (bins is a pd Series usually obtained with pd.cut)
     - combine_attrs: attributes which will be combined
     - label_to_predict: will be used to fit model to train data
