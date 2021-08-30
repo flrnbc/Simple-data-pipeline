@@ -64,7 +64,7 @@ def test_num_pipeline():
     assert (X3 == pipeline_num.fit_transform(X)).all()
 
 
-def test_full_pipelin_tr():
+def test_full_pipeline():
     X_df = pd.DataFrame([[2, 4, 8, 6, "a"],
                          [2, 4, 8, 8, "b"],
                          [4, 8, 16, np.nan, "c"]])
@@ -85,3 +85,6 @@ def test_full_pipelin_tr():
     X_tr = pipeline.fit_transform(X_df)
 
     assert (X_tr == Y).all()
+
+
+
