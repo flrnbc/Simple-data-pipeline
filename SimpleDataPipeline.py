@@ -33,6 +33,8 @@ def fetch_data(data_url, file_dir):
         return f"Data (csv-file) downloaded to {file_dir}."
     shutil.unpack_archive(str(file_path), str(dir_path))
     return f"Data downloaded to {file_dir} and decompressed."
+    # TODO: if there is only one file in the archive, return path to
+    # the decompressed file
 
 
 # SPLITTING DATA
