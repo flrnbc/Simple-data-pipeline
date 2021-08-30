@@ -4,14 +4,17 @@ import SimpleDataPipeline as sdp
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 
-data_path = "datasets"
+file_dir = "datasets"
 data_url = (
     "https://raw.githack.com/ageron/handson-ml2/master/datasets/housing/housing.tgz"
 )
-data_name = "housing"
 
-sdp.fetch_data(data_url, data_path, data_name)
-test_data = sdp.load_data_pd(data_path, data_name)
+try: 
+    sdp.fetch_data(data_url, file_dir)
+except FileExistsError:
+    print("File already exists. Just proceed.")
+finally:
+    test_data = pd.read_csv(file_dir + "/housing.csv")
 
 
 def test_shuffle_split_data():
