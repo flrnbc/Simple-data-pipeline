@@ -178,6 +178,8 @@ def full_transform(df, bins, combine_attrs, label_to_predict, ratio=0.2):
     test_labels = test_set[labels_to_predict].copy()
 
     # transform train_set and test_set (for evaluation)
+    # NOTE: use the transformations learned from train data
+    # for test data
     full_pipe = full_pipeline(train_set_drop, combine_attrs)
     tr_train_set = full_pipe.fit_transform(train_set_drop)
     tr_test_set = full_pipe.transform(test_set_drop)
