@@ -63,8 +63,8 @@ def shuffle_split_data(dataframe, bins, ratio=0.2):
 
 # CUSTOM TRANSFORMER(S)
 # combine attributes
-# TODO: add names for the combined attributes?
-
+# TODO: instead of using the number of columns, use their names?
+# TODO: add names for the combined attributes
 
 class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
     """
