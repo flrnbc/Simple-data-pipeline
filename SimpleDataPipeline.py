@@ -150,7 +150,7 @@ def full_pipeline(df, combine_attrs):
     return full_pipeline
 
 
-def full_transform(df, bins, combine_attrs, label_to_predict, ratio=0.2):
+def full_transform(df, bins, combine_attrs, to_predict, ratio=0.2):
     """
     Input:
     - df: dataframe
@@ -158,27 +158,26 @@ def full_transform(df, bins, combine_attrs, label_to_predict, ratio=0.2):
     - bins: to split data into train and test set
       (bins is a pd Series usually obtained with pd.cut)
     - combine_attrs: attributes which will be combined
-    - label_to_predict: will be used to fit model to train data
+    - to_predict: attribute to be predicted
 
     Output:
     - dict containing
-      + "train set": fully transformed train set using the above functions and
-        removing the labels
-      + "train labels": the labels (of the train set) which will be used to train
-        our models
-      + "test set": transformed test set (also removing the labels)
-      + "test labels": corresponding labels of test set.
+      + "tr_train_set": fully transformed train set using the above functions and
+        removing the column 'to_predict' from train set
+      + "train_labels": train_set[to_predict] (labels to be predicted)
+      + "tr_test_set": transformed test set, also removing the labels
+      + "test labels": test_set[to_predict]
     """
     shuffle_split = shuffle_split_data(df, bins, ratio)
     train_set = shuffle_split[0]
     test_set = shuffle_split[1]
 
     # get labels and drop them in train and test set
-    train_set_drop = train_set.drop(labels_to_predict, axis=1)
-    train_labels = train_set[labels_to_predict].copy()
-    test_set_drop = test_set.drop(labels_to_predict, axis=1)
-    test_labels = test_set[labels_to_predict].copy()
-
+    train_labels = train_set[to_predict].copy()
+    train_set_drop = train_set.drop(columns=[to_predict])
+    test_labels = test_set[to_predict].copy()
+    test_set_drop = test_set.drop(columns=[to_predict])
+    
     # transform train_set and test_set (for evaluation)
     # NOTE: use the transformations learned from train data
     # for test data
@@ -187,8 +186,8 @@ def full_transform(df, bins, combine_attrs, label_to_predict, ratio=0.2):
     tr_test_set = full_pipe.transform(test_set_drop)
 
     return {
-        "train_set": tr_train_set,
+        "transformed_train_set": tr_train_set,
         "train_labels": train_labels,
-        "test_set": tr_test_set,
+        "transformed_test_set": tr_test_set,
         "test_labels": test_labels,
     }
