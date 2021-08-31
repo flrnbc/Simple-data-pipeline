@@ -43,7 +43,8 @@ def fetch_data(data_url, file_dir):
 
 def shuffle_split_data(dataframe, bins, ratio=0.2):
     """
-    Splits data into test and training set using StratifiedShuffleSplit (sklearn).
+    Splits data into test and training set using StratifiedShuffleSplit
+    from sklearn.
 
     Input:
     - dataframe: data to be split
@@ -54,7 +55,9 @@ def shuffle_split_data(dataframe, bins, ratio=0.2):
     Output:
     - Tuple (train_set, test_set).
     """
-    shuffle_split = StratifiedShuffleSplit(n_splits=1, test_size=ratio, random_state=42)
+    shuffle_split = StratifiedShuffleSplit(n_splits=1,
+                                           test_size=ratio,
+                                           random_state=42)
     for train_index, test_index in shuffle_split.split(dataframe, bins):
         strat_train_set = dataframe.loc[train_index]
         strat_test_set = dataframe.loc[test_index]
@@ -66,13 +69,14 @@ def shuffle_split_data(dataframe, bins, ratio=0.2):
 # TODO: instead of using the number of columns, use their names?
 # TODO: add names for the combined attributes
 
+
 class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
     """
     Transformer to add combined attributes.
 
     Class attributes:
-    - combine_attrs: list of tuples (m, n). These will combine the m-th and n-th
-      column/attributes ('divide m-th by n-th column')
+    - combine_attrs: list of tuples (m, n). These will combine the m-th
+      and n-th column/attributes ('divide m-th by n-th column')
 
     Class methods:
     - transform
@@ -83,6 +87,7 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
         # (design choice?)
         self.combine_attrs = combine_attrs
 
+    # `fit` is added to comply with scikit-learn's design philosophy
     def fit(self, X, y=None):
         return self
 
@@ -100,7 +105,7 @@ class CombinedAttributesAdder(BaseEstimator, TransformerMixin):
             attr = X[:, pair[0]] / X[:, pair[1]]
             combined_columns.append(attr)
         for col in combined_columns:
-            X = np.c_[X, attr]
+            X = np.c_[X, col]
         return X
 
 
@@ -118,14 +123,14 @@ def num_pipeline(combine_attrs):
                        parameters combine_attrs.
     - 'std_scaler': Scales the values.
     """
-    num_pipeline = Pipeline(
+    num_pipe = Pipeline(
         [
             ("imputer", SimpleImputer(strategy="median")),
             ("attribs_adder", CombinedAttributesAdder(combine_attrs)),
             ("std_scaler", StandardScaler()),
         ]
     )
-    return num_pipeline
+    return num_pipe
 
 
 def full_pipeline(df, combine_attrs):
@@ -141,13 +146,13 @@ def full_pipeline(df, combine_attrs):
     num_array = list(df.select_dtypes(exclude="object"))
     cat_array = list(df.select_dtypes(include="object"))
 
-    full_pipeline = ColumnTransformer(
+    full_pipe = ColumnTransformer(
         [
             ("num", num_pipeline(combine_attrs), num_array),
             ("cat", OneHotEncoder(), cat_array),
         ]
     )
-    return full_pipeline
+    return full_pipe
 
 
 def full_transform(df, bins, combine_attrs, to_predict, ratio=0.2):
@@ -162,8 +167,8 @@ def full_transform(df, bins, combine_attrs, to_predict, ratio=0.2):
 
     Output:
     - dict containing
-      + "tr_train_set": fully transformed train set using the above functions and
-        removing the column 'to_predict' from train set
+      + "tr_train_set": fully transformed train set using the above functions
+        and removing the column 'to_predict' from train set
       + "train_labels": train_set[to_predict] (labels to be predicted)
       + "tr_test_set": transformed test set, also removing the labels
       + "test labels": test_set[to_predict]
@@ -177,7 +182,7 @@ def full_transform(df, bins, combine_attrs, to_predict, ratio=0.2):
     train_set_drop = train_set.drop(columns=[to_predict])
     test_labels = test_set[to_predict].copy()
     test_set_drop = test_set.drop(columns=[to_predict])
-    
+
     # transform train_set and test_set (for evaluation)
     # NOTE: use the transformations learned from train data
     # for test data
